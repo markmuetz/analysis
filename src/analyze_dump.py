@@ -164,7 +164,8 @@ def calc_q_diffs(da):
 def main(stash, dir):
     print(dir)
     output_dir = os.path.expandvars('$OUTPUT_DIR')
-    os.makedirs(output_dir)
+    if not os.path.exists(output_dir):
+	os.makedirs(output_dir)
     with open(os.path.join(output_dir, 'demo.csv'), 'w') as f:
 	f.write('h,h2,h3\n')
 	f.write('1,2,3\n')
