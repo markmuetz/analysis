@@ -88,7 +88,7 @@ class DumpAnalyzer(object):
         self.say('')
 
     def sanity_check(self, qvars, mvars):
-        msum = np.zeros_like(mvars.data[0])
+        msum = np.zeros_like(mvars[0].data)
         for mv in mvars:
             msum += mv.data
 
