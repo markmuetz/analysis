@@ -28,4 +28,12 @@ Goes in `output`. This is the output and error streams from the qsub command, an
 Results
 -------
 
-Goes into a directory under `results`, e.g. `results/u-aj703`.
+Goes into a directory under `results`, e.g. `results/u-aj703`. Any results files will go here.
+
+Updating
+========
+
+    cd $WORKDIR/analysis
+    git pull
+    
+
