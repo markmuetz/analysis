@@ -3,6 +3,7 @@ import sys
 from glob import glob
 
 import numpy as np
+import pandas as pd
 import iris
 
 import omnium as om
@@ -97,6 +98,7 @@ def mwvi(rho, var):
     var_col = (dz3d * varXrho).sum(axis=0)
 
     # Stuff results into a lovingly crafted cube.
+    # Get cube with correct shape (2D horizontal slice).
     new_cube = var.slices_over('model_level_number').next().copy()
     new_cube.data = var_col
     new_cube.rename('Mass weighted vertical integral of {}'.format(var.name()))
