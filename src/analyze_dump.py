@@ -96,7 +96,7 @@ class DumpAnalyzer(object):
             self.say(qv.name())
             diff = np.abs((mv.data / (1 + msum)) - qv.data)
             self.say('Max diff: {}'.format(diff.max()))
-            if diff > 1e-15:
+            if diff.max() > 1e-15:
                 self.say('MAX DIFF TOO LARGE')
 
     def save(self):
