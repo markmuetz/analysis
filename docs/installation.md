@@ -15,6 +15,11 @@ Running
     # Edit settings.sh
     qsub analyze_dump.pbs
     
+Monitor progress:
+
+    watch qstat -au $USER
+    <ctrl-C>
+    
 Output
 ------
 

@@ -20,7 +20,7 @@ cd $PBS_O_WORKDIR
 source settings.sh
 
 # N.B. user has no control over this.
-export $RESULTS_DIR=results
+export RESULTS_DIR=results
 
 # Make sure anaconda (and iris etc.) is loaded.
 module load anaconda-compute
