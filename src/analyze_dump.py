@@ -97,7 +97,9 @@ class DumpAnalyzer(object):
 
         with open(filename, 'a') as f:
             if header:
+                self.say('Writing header for {}'.format(filename))
                 f.write('Time (hours),TMSE (J m-2),TCW (kg m-2)\n')
+            self.say('Writing to {}'.format(filename))
             f.write('{},{},{}\n'.format(self.dump_file[-3:], self.total_mse, self.tcw))
 
     def say(self, message):
