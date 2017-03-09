@@ -40,8 +40,12 @@ class DumpAnalyzer(object):
         self.expt = expt
         self.dump_file = os.path.join(self.directory, dump_file)
         self.results_dir = results_dir
-        self.dump = iris.load(self.dump_file)
         self.name = '{}:{}'.format(suite, os.path.basename(self.dump_file))
+        # self.results = OrderedDict()
+
+    def load(self):
+        """Load iris cube list into self.dump, rename if omnium available."""
+        self.dump = iris.load(self.dump_file)
         try:
             import omnium as om
             stash = om.Stash()
@@ -49,9 +53,9 @@ class DumpAnalyzer(object):
         except:
             self.say('Cannot rename cubes')
             pass
-        # self.results = OrderedDict()
 
     def run(self):
+        """Get useful cubes from self.dump, perform sanity chacks and calc MSE, TCW."""
         dump = self.dump
         self.rho = get_cube(dump, 0, 253) / Re ** 2
         self.rho_d = get_cube(dump, 0, 389)
@@ -79,8 +83,6 @@ class DumpAnalyzer(object):
 
         self._calc_tcw(self.rho, self.qvars)
         self._calc_mse(self.rho, self.th, self.ep, self.q)
-
-        self.say('')
 
     def save(self):
         """Create or append to CSV file."""
