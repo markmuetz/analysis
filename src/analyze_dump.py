@@ -35,7 +35,7 @@ class DumpAnalyzer(object):
 
     def __init__(self, user, suite, expt, dump_file, results_dir):
         self.user = user
-        self.directory = self.get_directory(expt)
+        self.directory = self.get_directory(user, suite, expt)
         self.suite = suite
         self.expt = expt
         self.dump_file = dump_file
