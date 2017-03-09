@@ -105,7 +105,7 @@ class DumpAnalyzer(object):
 
         with open(os.path.join(self.results_dir, self.expt + '.csv'), 'w') as f:
             f.write('MSE,TCW\n')
-            f.write('{},{}\n'.format(self.msw, self.tcw))
+            f.write('{},{}\n'.format(self.mse, self.tcw))
 
     def say(self, message):
         print(message)
