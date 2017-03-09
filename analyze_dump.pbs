@@ -26,4 +26,4 @@ export $RESULTS_DIR=results
 module load anaconda-compute
 
 # Call script with command line args.
-python $ANALYZE_DIR/src/analyze_dump.py $EXPTS > output/$PBS_JOBID.out 2>output/$PBS_JOBID.err
+python $ANALYZE_DIR/src/analyze_dump.py $EXPTS > output/job_$PBS_JOBID.out 2>output/job_$PBS_JOBID.err
