@@ -154,6 +154,7 @@ def main(stash, directory):
     with open(os.path.join(output_dir, 'demo.csv'), 'w') as f:
         f.write('h,h2,h3\n')
         f.write('1,2,3\n')
+    return
 
     for da_name in sorted(glob(os.path.join(directory, 'atmosa_da???')))[:1]:
         print(da_name)

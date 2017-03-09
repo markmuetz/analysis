@@ -3,22 +3,17 @@
 # Run with qsub analyze_dump.pbs
 #PBS -N an_dump
 #PBS -l select=serial=true:ncpus=1
-#PBS -l walltime=00:30:00
-#PBS -j oe
+#PBS -l walltime=00:03:00
 #PBS -A n02-REVCON
-#PBS -o job.$PBS_JOBID.out
-#PBS -e job.$PBS_JOBID.err
 
 # Make sure any symbolic links are resolved to absolute path
 export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR)               
+echo $PBS_JOBID
 
 # Change to the directory that the job was submitted from
 cd $PBS_O_WORKDIR
 
-export SUITE=u-aj703
-export ANALYZE_DIR=/work/n02/n02/mmuetz/analysis
-export OUTPUT_DIR=output
-export EXPTS="km1_MC_on km1_MC_off"
+source settings.sh
 
 # Make sure anaconda (and iris etc.) is loaded.
 module load anaconda-compute
