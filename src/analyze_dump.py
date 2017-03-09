@@ -40,8 +40,8 @@ class DumpAnalyzer(object):
         self.expt = expt
         self.dump_file = os.path.join(self.directory, dump_file)
         self.results_dir = results_dir
-        self.dump = iris.load(dump_file)
-        self.name = '{}:{}'.format(suite, os.path.basename(dump_file))
+        self.dump = iris.load(self.dump_file)
+        self.name = '{}:{}'.format(suite, os.path.basename(self.dump_file))
         try:
             import omnium as om
             stash = om.Stash()
