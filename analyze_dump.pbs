@@ -6,8 +6,8 @@
 #PBS -l walltime=00:30:00
 #PBS -j oe
 #PBS -A n02-REVCON
-#PBS -o job.out
-#PBS -e job.err
+#PBS -o job.$PBS_JOBID.out
+#PBS -e job.$PBS_JOBID.err
 
 # Make sure any symbolic links are resolved to absolute path
 export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR)               
