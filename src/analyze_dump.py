@@ -104,8 +104,8 @@ class DumpAnalyzer(object):
             os.makedirs(self.results_dir)
 
         with open(os.path.join(self.results_dir, self.expt + '.csv'), 'w') as f:
-            f.write('MSE,TCW\n')
-            f.write('{},{}\n'.format(self.mse, self.tcw))
+            f.write('TMSE (J m-2),TCW (kg m-2)\n')
+            f.write('{},{}\n'.format(self.total_mse, self.tcw))
 
     def say(self, message):
         print(message)
@@ -132,11 +132,8 @@ class DumpAnalyzer(object):
         self.e_z_profile = self.e_z.mean(axis=(1, 2))
 
         self.mse_profile = self.mse.mean(axis=(1, 2))
-        #    f.write('{},{},{},{}\n'.format((mse_profile * dz).sum(),
-        #                                  (e_t_profile * dz).sum(),
-        #                                  (e_q_profile * dz).sum(),
-        #                                  (e_z_profile * dz).sum()))
-        self.say('MSE [GJ m^-2] = {0:.5f}'.format((self.mse_profile * dz).sum() / 1e9))
+        self.total_mse = (self.mse_profile * dz).sum()
+        self.say('MSE [GJ m^-2] = {0:.5f}'.format(self.total_mse / 1e9))
         self.say('  E(T) [GJ m^-2] = {0:.5f}'.format((self.e_t_profile * dz).sum() / 1e9))
         self.say('  E(q) [GJ m^-2] = {0:.5f}'.format((self.e_q_profile * dz).sum() / 1e9))
         self.say('  E(z) [GJ m^-2] = {0:.5f}'.format((self.e_z_profile * dz).sum() / 1e9))
