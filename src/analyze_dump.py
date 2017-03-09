@@ -220,7 +220,8 @@ class DumpAnalyzer(object):
 def main(user, expts, suite, results_dir):
     for expt in expts:
         for dump_file in DumpAnalyzer.get_files(user, suite, expt):
-            da = DumpAnalyzer(user, suite, expt, dump_file, results_dir)
+            da = DumpAnalyzer(user, suite, expt, os.path.basename(dump_file), results_dir)
+            da.load()
             da.run()
             da.save()
 
