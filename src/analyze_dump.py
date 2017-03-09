@@ -153,17 +153,17 @@ def main(stash, expt, directory):
 
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
-    with open(os.path.join(results_dir, expt + '_demo.csv'), 'w') as f:
-        f.write('h,h2,h3\n')
-        f.write('1,2,3\n')
-    return
 
-    for da_name in sorted(glob(os.path.join(directory, 'atmosa_da???')))[:1]:
+    if False:
+        with open(os.path.join(results_dir, expt + '_demo.csv'), 'w') as f:
+            f.write('h,h2,h3\n')
+            f.write('1,2,3\n')
+
+    for da_name in sorted(glob(os.path.join(directory, 'atmosa_da???'))):
         print(da_name)
         da = iris.load(da_name)
         stash.rename_unknown_cubes(da, True)
         calc_q_diffs(da)
-        # calc_mqvi(da)
 
 
 if __name__ == '__main__':
