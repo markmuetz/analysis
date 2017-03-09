@@ -96,7 +96,7 @@ class DumpAnalyzer(object):
         with open(filename, 'a') as f:
             if header:
                 f.write('Time (hours),TMSE (J m-2),TCW (kg m-2)\n')
-            f.write('{},{},{}\n'.format(self.dump_file[-3], self.total_mse, self.tcw))
+            f.write('{},{},{}\n'.format(self.dump_file[-3:], self.total_mse, self.tcw))
 
     def say(self, message):
         """Speak out loud."""
