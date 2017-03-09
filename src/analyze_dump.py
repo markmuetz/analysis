@@ -51,7 +51,7 @@ def calc_mse(rho, th, ep, q):
     print('  E(z) [GJ m^-2] = {0:.5f}'.format((e_z_profile * dz).sum() / 1e9))
 
 
-def mwvi(rho, var):
+def calc_mwvi(rho, var):
     """Calculate Mass Weighted Vertical Integral
 
     Must be passed two iris cubes with ndim=3
@@ -132,7 +132,7 @@ def calc_q_diffs(da):
     for qv, mv in zip(qvars, mvars):
         print(qv.name())
         print(np.abs((mv.data / (1 + m.data + mcl.data + mcf.data + mrain.data + mgraup.data)) - qv.data).max())
-        mwvi_vars.append(mwvi(rho, qv))
+        mwvi_vars.append(calc_mwvi(rho, qv))
 
     q_rho = (q.data[:-1, :, :] + q.data[1:, :, :]) / 2
     m_rho = (m.data[:-1, :, :] + m.data[1:, :, :]) / 2
