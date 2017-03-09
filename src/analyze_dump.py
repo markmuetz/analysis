@@ -53,61 +53,53 @@ class DumpAnalyzer(object):
 
     def run(self):
         dump = self.dump
-        rho = get_cube(dump, 0, 253) / Re ** 2
-        rho_d = get_cube(dump, 0, 389)
+        self.rho = get_cube(dump, 0, 253) / Re ** 2
+        self.rho_d = get_cube(dump, 0, 389)
 
-        th = get_cube(dump, 0, 4)
-        ep = get_cube(dump, 0, 255)
+        self.th = get_cube(dump, 0, 4)
+        self.ep = get_cube(dump, 0, 255)
 
-        q = get_cube(dump, 0, 10)
-        qcl = get_cube(dump, 0, 254)
-        qcf = get_cube(dump, 0, 12)
-        qrain = get_cube(dump, 0, 272)
-        qgraup = get_cube(dump, 0, 273)
+        self.q = get_cube(dump, 0, 10)
+        self.qcl = get_cube(dump, 0, 254)
+        self.qcf = get_cube(dump, 0, 12)
+        self.qrain = get_cube(dump, 0, 272)
+        self.qgraup = get_cube(dump, 0, 273)
 
-        m = get_cube(dump, 0, 391)
-        mcl = get_cube(dump, 0, 392)
-        mcf = get_cube(dump, 0, 393)
-        mrain = get_cube(dump, 0, 394)
-        mgraup = get_cube(dump, 0, 395)
+        self.m = get_cube(dump, 0, 391)
+        self.mcl = get_cube(dump, 0, 392)
+        self.mcf = get_cube(dump, 0, 393)
+        self.mrain = get_cube(dump, 0, 394)
+        self.mgraup = get_cube(dump, 0, 395)
 
-        qvars = [q, qcl, qcf, qrain, qgraup]
-        mvars = [m, mcl, mcf, mrain, mgraup]
+        self.qvars = [self.q, self.qcl, self.qcf, self.qrain, self.qgraup]
+        self.mvars = [self.m, self.mcl, self.mcf, self.mrain, self.mgraup]
 
-        self.sanity_check(qvars, mvars)
+        self._sanity_check_water_species(self.qvars, self.mvars)
+        self._sanity_check_wv_density(self.rho, self.rho_d, self.q, self.m)
 
-        self._calc_tcw(rho, qvars)
-        self.say('Total col water (kg m-2/mm): {}'.format(self.tcw))
+        self._calc_tcw(self.rho, self.qvars)
+        self._calc_mse(self.rho, self.th, self.ep, self.q)
 
-        self._calc_mse(rho, th, ep, q)
-
-        q_rho = (q.data[:-1, :, :] + q.data[1:, :, :]) / 2
-        m_rho = (m.data[:-1, :, :] + m.data[1:, :, :]) / 2
-
-        self.say('max diff rho_d * m, rho * q: {}'.format(np.abs(rho_d.data * m_rho - rho.data * q_rho).max()))
         self.say('')
 
-    def sanity_check(self, qvars, mvars):
-        msum = np.zeros_like(mvars[0].data)
-        for mv in mvars:
-            msum += mv.data
-
-        for qv, mv in zip(qvars, mvars):
-            self.say(qv.name())
-            diff = np.abs((mv.data / (1 + msum)) - qv.data)
-            self.say('Max diff: {}'.format(diff.max()))
-            if diff.max() > 1e-15:
-                self.say('MAX DIFF TOO LARGE')
-
     def save(self):
+        """Create or append to CSV file."""
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
 
-        with open(os.path.join(self.results_dir, self.expt + '.csv'), 'w') as f:
-            f.write('TMSE (J m-2),TCW (kg m-2)\n')
-            f.write('{},{}\n'.format(self.total_mse, self.tcw))
+        filename = os.path.join(self.results_dir, self.expt + '.csv')
+        if not os.path.exists(filename):
+            header = True
+        else:
+            header = False
+
+        with open(filename, 'a') as f:
+            if header:
+                f.write('Time (hours),TMSE (J m-2),TCW (kg m-2)\n')
+            f.write('{},{},{}\n'.format(self.dump_file[-3], self.total_mse, self.tcw))
 
     def say(self, message):
+        """Speak out loud."""
         print(message)
 
     def _calc_mse(self, rho, th, ep, q):
@@ -198,7 +190,27 @@ class DumpAnalyzer(object):
         for qv in qvars:
             self.mwvi_vars.append((qv.name(), self._calc_mwvi(rho, qv)))
         self.tcw = np.sum([v[1].data.mean() for v in self.mwvi_vars])
+        self.say('Total col water (kg m-2/mm): {}'.format(self.tcw))
         return self.tcw
+
+    def _sanity_check_water_species(self, qvars, mvars):
+        """Perform a check to make sure that spec. humidity/mixing ratio rel. holds."""
+        msum = np.zeros_like(mvars[0].data)
+        for mv in mvars:
+            msum += mv.data
+
+        for qv, mv in zip(qvars, mvars):
+            self.say(qv.name())
+            diff = np.abs((mv.data / (1 + msum)) - qv.data)
+            self.say('Max diff: {}'.format(diff.max()))
+            if diff.max() > 1e-15:
+                self.say('MAX DIFF TOO LARGE')
+
+    def _sanity_check_wv_density(self, rho, rho_d, q, m):
+        q_rho = (q.data[:-1, :, :] + q.data[1:, :, :]) / 2
+        m_rho = (m.data[:-1, :, :] + m.data[1:, :, :]) / 2
+
+        self.say('max diff rho_d * m, rho * q: {}'.format(np.abs(rho_d.data * m_rho - rho.data * q_rho).max()))
 
 
 def main(user, expts, suite, results_dir):
