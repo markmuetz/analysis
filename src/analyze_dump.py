@@ -146,12 +146,14 @@ def calc_q_diffs(da):
     print('')
 
 
-def main(stash, directory):
+def main(stash, expt, directory):
     print(directory)
-    output_dir = os.path.expandvars('$OUTPUT_DIR')
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    with open(os.path.join(output_dir, 'demo.csv'), 'w') as f:
+    suite_dir = os.path.expandvars('$SUITE')
+    results_dir = os.path.join(os.path.expandvars('$RESULTS_DIR'), suite_dir)
+
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+    with open(os.path.join(results_dir, expt + '_demo.csv'), 'w') as f:
         f.write('h,h2,h3\n')
         f.write('1,2,3\n')
     return
@@ -168,4 +170,4 @@ if __name__ == '__main__':
     stash = om.Stash()
     for expt in sys.argv[1:]:
         directory = os.path.join(os.path.expandvars(ARCHER_BASE_DIR), expt)
-        main(stash, directory)
+        main(stash, expt, directory)

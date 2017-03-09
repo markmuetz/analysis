@@ -1,3 +1,6 @@
+settings.sh
 *.pyc
 .*.swp
 .idea
+output/
+results/

@@ -5,18 +5,25 @@
 #PBS -l select=serial=true:ncpus=1
 #PBS -l walltime=00:03:00
 #PBS -A n02-REVCON
+#PBS -o output/job.out
+#PBS -e output/job.err
+# All attempts to set e.g. PBS -o $PBS_JOBID.out here have failed.
+# Accept that stdout/stderr for this script will go to same file
+# with multiple runs :(.
 
 # Make sure any symbolic links are resolved to absolute path
 export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR)               
-echo $PBS_JOBID
 
 # Change to the directory that the job was submitted from
 cd $PBS_O_WORKDIR
 
 source settings.sh
 
+# N.B. user has no control over this.
+export $RESULTS_DIR=results
+
 # Make sure anaconda (and iris etc.) is loaded.
 module load anaconda-compute
 
 # Call script with command line args.
-python $ANALYZE_DIR/src/analyze_dump.py $EXPTS
+python $ANALYZE_DIR/src/analyze_dump.py $EXPTS > output/$PBS_JOBID.out 2 > output/$PBS_JOBID.err
