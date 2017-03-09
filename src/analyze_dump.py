@@ -38,7 +38,7 @@ class DumpAnalyzer(object):
         self.directory = self.get_directory(user, suite, expt)
         self.suite = suite
         self.expt = expt
-        self.dump_file = dump_file
+        self.dump_file = os.path.join(self.directory, dump_file)
         self.results_dir = results_dir
         self.dump = iris.load(dump_file)
         self.name = '{}:{}'.format(suite, os.path.basename(dump_file))
