@@ -4,14 +4,14 @@ Installation
 On ARCHER:
 
     cd $WORKDIR
-    git clone https://github.com/markmuetz/analysis
-    cd analysis
+    git clone https://github.com/markmuetz/archer_analysis
+    cd archer_analysis
     ./initial_setup.sh
     
 Running
 =======
 
-    cd $WORKDIR/analysis/run_control/
+    cd $WORKDIR/archer_analysis/run_control/
     # Edit settings.sh
     qsub analyze_dump.pbs
 
@@ -35,7 +35,7 @@ Goes into a directory under `results`, e.g. `results/u-aj703`. Any results files
 Updating
 ========
 
-    cd $WORKDIR/analysis
+    cd $WORKDIR/archer_analysis
     git pull
     
 
