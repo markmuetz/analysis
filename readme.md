@@ -14,9 +14,7 @@ Running
     cd $WORKDIR/analysis/run_control/
     # Edit settings.sh
     qsub analyze_dump.pbs
-    # Untested, run
-    # qsub -hold_jid an_dump plot_dump_analysis.pbs
-    
+
 Monitor progress:
 
     watch qstat -au $USER
