@@ -1,12 +1,12 @@
 #!/bin/bash --login
 #
-# Run with qsub analyze_dump.pbs
-#PBS -N an_dump
+# Run with qsub plot_dump_analysis.pbs
+#PBS -N plt_d_an
 #PBS -l select=serial=true:ncpus=1
-#PBS -l walltime=01:00:00
+#PBS -l walltime=00:10:00
 #PBS -A n02-REVCON
-#PBS -o output/analyze_dump.out
-#PBS -e output/analyze_dump.err
+#PBS -o output/plot_dump_analysis.out
+#PBS -e output/plot_dump_analysis.err
 # All attempts to set e.g. PBS -o $PBS_JOBID.out here have failed.
 # Accept that stdout/stderr for this script will go to same file
 # with multiple runs :(.
@@ -26,4 +26,4 @@ export RESULTS_DIR=results
 module load anaconda-compute
 
 # Call script with command line args.
-python $ANALYZE_DIR/src/analyze_dump.py $EXPTS > output/job_$PBS_JOBID.out 2>output/job_$PBS_JOBID.err
+python $ANALYZE_DIR/src/plot_dump_analysis.py $EXPTS > output/job_$PBS_JOBID.out 2>output/job_$PBS_JOBID.err
