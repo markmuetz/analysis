@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-cp settings_template.sh settings.sh
+cp run_control/settings_template.sh run_control/settings.sh
 mkdir -p output
 mkdir -p results
