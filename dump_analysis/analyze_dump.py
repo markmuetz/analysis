@@ -229,6 +229,5 @@ def main(user, expts, suite, results_dir):
 if __name__ == '__main__':
     user = os.path.expandvars('$USER')
     suite = os.path.expandvars('$SUITE')
-    results_dir = os.path.join(os.path.expandvars('$ANALYZE_DIR'),
-                               os.path.expandvars('$RESULTS_DIR'), suite)
+    results_dir = os.path.join(os.path.expandvars('$RESULTS_DIR'))
     main(user, sys.argv[1:], suite, results_dir)
