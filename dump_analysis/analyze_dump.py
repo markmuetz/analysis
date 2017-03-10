@@ -42,7 +42,7 @@ class DumpAnalyzer(object):
         self.dump_file = os.path.join(self.directory, dump_file)
         self.results_dir = results_dir
         self.name = '{}:{}'.format(suite, os.path.basename(self.dump_file))
-        # self.results = OrderedDict()
+        self.results = OrderedDict()
 
     def already_analyzed(self):
         return os.path.exists(self.dump_file + '.analyzed')
@@ -97,28 +97,39 @@ class DumpAnalyzer(object):
         self.append_log('Analyzed')
 
     def save(self):
-        """Create or append to CSV file."""
+        """Save all results for dump."""
         self.append_log('Saving')
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
 
-        filename = os.path.join(self.results_dir, self.expt + '.csv')
-        if not os.path.exists(filename):
+        cubelist_filename = os.path.join(self.results_dir, os.path.basename(self.dump_file) + '_dump_analysis.nc')
+        cubelist = iris.cube.CubeList(self.results.values())
+        iris.save(cubelist, cubelist_filename)
+
+        csv_filename = os.path.join(self.results_dir, self.expt + '.csv')
+        if not os.path.exists(csv_filename):
             header = True
         else:
             header = False
 
-        with open(filename, 'a') as f:
+        with open(csv_filename, 'a') as f:
             if header:
-                self.say('Writing header for {}'.format(filename))
+                self.say('Writing header for {}'.format(csv_filename))
                 f.write('Time (hours),TMSE (J m-2),TCW (kg m-2)\n')
-            self.say('Writing to {}'.format(filename))
+            self.say('Writing to {}'.format(csv_filename))
             f.write('{},{},{}\n'.format(self.dump_file[-3:], self.total_mse, self.tcw))
         self.append_log('Saved')
 
     def say(self, message):
         """Speak out loud."""
         print(message)
+
+    def _create_cube(self, archetype, data, name, units):
+        cube = archetype.copy()
+        cube.rename(name)
+        cube.units(units)
+        cube.data = data
+        return cube
 
     def _calc_mse(self, rho, th, ep, q):
         """Calculate Moist Static Energy
@@ -136,6 +147,11 @@ class DumpAnalyzer(object):
         self.e_z = rho.data * g * Lv_rho
 
         self.mse = (self.e_t + self.e_q + self.e_z)
+
+        self.results['MSE'] = self._create_cube(rho, self.mse, 'Moist Static Energy', 'J')
+        self.results['MSE_T'] = self._create_cube(rho, self.e_t, 'Moist Static Energy (T term)', 'J')
+        self.results['MSE_Q'] = self._create_cube(rho, self.e_q, 'Moist Static Energy (Q term)', 'J')
+        self.results['MSE_Z'] = self._create_cube(rho, self.e_z, 'Moist Static Energy (Z term)', 'J')
 
         self.e_t_profile = self.e_t.mean(axis=(1, 2))
         self.e_q_profile = self.e_q.mean(axis=(1, 2))
@@ -206,7 +222,9 @@ class DumpAnalyzer(object):
         """Calculates Total Column Water from all the specific water species."""
         self.mwvi_vars = []
         for qv in qvars:
-            self.mwvi_vars.append((qv.name(), self._calc_mwvi(rho, qv)))
+            mwvi_qv = self._calc_mwvi(rho, qv)
+            self.results[mwvi_qv.name()] = mwvi_qv
+            self.mwvi_vars.append((qv.name(), mwvi_qv))
         self.tcw = np.sum([v[1].data.mean() for v in self.mwvi_vars])
         self.say('Total col water (kg m-2/mm): {}'.format(self.tcw))
         return self.tcw
