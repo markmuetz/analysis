@@ -11,14 +11,18 @@ On ARCHER:
 Running
 =======
 
-    cd $WORKDIR/analysis
+    cd $WORKDIR/analysis/run_control/
     # Edit settings.sh
     qsub analyze_dump.pbs
+    # Untested, run
+    # qsub -hold_jid an_dump plot_dump_analysis.pbs
     
 Monitor progress:
 
     watch qstat -au $USER
     <ctrl-C>
+    # After it has finished:
+    qsub plot_dump_analysis.pbs
     
 Output
 ------
@@ -37,3 +41,7 @@ Updating
     git pull
     
 
+TODO
+====
+
+[TODOs](docs/todo.md)

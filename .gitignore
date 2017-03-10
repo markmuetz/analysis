@@ -1,4 +1,4 @@
-settings.sh
+run_control/settings.sh
 *.pyc
 .*.swp
 .idea

@@ -17,13 +17,12 @@ export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR)
 # Change to the directory that the job was submitted from
 cd $PBS_O_WORKDIR
 
+# Load user specific settings.
 source settings.sh
-
-# N.B. user has no control over this.
-export RESULTS_DIR=results
-
-# Make sure anaconda (and iris etc.) is loaded.
-module load anaconda-compute
+# Perform configuration common to all scripts.
+source common_conf.sh
 
 # Call script with command line args.
-python $ANALYZE_DIR/dump_analysis/analyze_dump.py $EXPTS > output/job_$PBS_JOBID.out 2>output/job_$PBS_JOBID.err
+python $ANALYZE_DIR/dump_analysis/analyze_dump.py $EXPTS \
+    > $ANALYZE_DIR/output/analyze_dump_$PBS_JOBID.out \
+    2>$ANALYZE_DIR/output/analyze_dump_$PBS_JOBID.err
