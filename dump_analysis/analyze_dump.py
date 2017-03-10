@@ -127,7 +127,7 @@ class DumpAnalyzer(object):
     def _create_cube(self, archetype, data, name, units):
         cube = archetype.copy()
         cube.rename(name)
-        cube.units(units)
+        cube.units = units
         cube.data = data
         return cube
 
