@@ -7,19 +7,9 @@ from collections import OrderedDict
 import numpy as np
 import iris
 
-Re = 6371229.
-L = 2.5e6
-cp = 1004
-g = 9.81
+from utils import get_cube
 
-
-def get_cube(cubes, section, item):
-    for cube in cubes:
-        stash = cube.attributes['STASH']
-        if section == stash.section and item == stash.item:
-            return cube
-    return None
-
+from consts import Re, L, cp, g
 
 class DumpAnalyzer(object):
     ARCHER_BASE_DIR = '/work/n02/n02/{}/cylc-run/{}/share/data/history/{}/'
