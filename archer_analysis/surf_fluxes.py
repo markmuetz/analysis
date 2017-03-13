@@ -149,5 +149,5 @@ def main(user, expts, suite, results_dir):
 if __name__ == '__main__':
     user = os.path.expandvars('$USER')
     suite = os.path.expandvars('$SUITE')
-    results_dir = os.path.join(os.path.expandvars('$DATAW'), 'results')
+    results_dir = os.path.expandvars('$DATAW')
     main(user, sys.argv[1:], suite, results_dir)
