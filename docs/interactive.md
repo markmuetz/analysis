@@ -8,9 +8,9 @@ To do this on ARCHER:
     ipython
     
 ```python
-import dump_analysis
+import archer_analysis
 
-da = dump_analysis.analyze_dump.DumpAnalyzer(user, suite, expt, dump_file, results_dir)
+da = archer_analysis.analyze_dump.DumpAnalyzer(user, suite, expt, dump_file, results_dir)
 da.load()
 da.run()
 da.save()
