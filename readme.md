@@ -39,7 +39,7 @@ Updating
     git pull
     
 
-TODO
+DOCS
 ====
 
-[TODOs](docs/todo.md)
+[docs](docs/index.md)
