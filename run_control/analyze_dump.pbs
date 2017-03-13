@@ -23,6 +23,6 @@ source settings.sh
 source common_conf.sh
 
 # Call script with command line args.
-python $ANALYZE_DIR/dump_analysis/analyze_dump.py $EXPTS \
+python $ANALYZE_DIR/archer_analysis/analyze_dump.py $EXPTS \
     > $ANALYZE_DIR/output/analyze_dump_$PBS_JOBID.out \
     2>$ANALYZE_DIR/output/analyze_dump_$PBS_JOBID.err

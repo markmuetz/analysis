@@ -23,6 +23,6 @@ source settings.sh
 source common_conf.sh
 
 # Call script with command line args.
-python $ANALYZE_DIR/dump_analysis/surf_fluxes.py $EXPTS \
+python $ANALYZE_DIR/archer_analysis/surf_fluxes.py $EXPTS \
     > $ANALYZE_DIR/output/surf_fluxes_$PBS_JOBID.out \
     2>$ANALYZE_DIR/output/surf_fluxes_$PBS_JOBID.err
