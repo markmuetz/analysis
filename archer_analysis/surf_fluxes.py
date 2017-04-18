@@ -16,12 +16,12 @@ from consts import Re, L, cp, g
 
 class SurfFluxAnalyzer(object):
     ARCHER_BASE_DIR = '/work/n02/n02/{}/cylc-run/{}/work/20000101T0000Z/{}_atmos/'
-    PP1_FILE = 'atmos.pp1'
+    PP3_FILE = 'atmos.pp3'
 
     @staticmethod
     def get_file(user, suite, expt):
         directory = SurfFluxAnalyzer.get_directory(user, suite, expt)
-        return os.path.join(directory, SurfFluxAnalyzer.PP1_FILE)
+        return os.path.join(directory, SurfFluxAnalyzer.PP3_FILE)
 
     @staticmethod
     def get_directory(user, suite, expt):
@@ -32,7 +32,7 @@ class SurfFluxAnalyzer(object):
         self.directory = self.get_directory(user, suite, expt)
         self.suite = suite
         self.expt = expt
-        self.file = os.path.join(self.directory, self.PP1_FILE)
+        self.file = os.path.join(self.directory, self.PP3_FILE)
         self.results_dir = results_dir
         self.name = '{}_{}'.format(suite, expt)
         self.results = OrderedDict()
