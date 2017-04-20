@@ -16,7 +16,7 @@ from consts import Re, L, cp, g
 
 class MomentumFluxAnalyzer(object):
     ARCHER_BASE_DIR = '/work/n02/n02/{}/cylc-run/{}/share/data/history/{}/'
-    PP2_FILE = 'atmos.024.pp2'
+    PP2_FILE = 'atmos.408.pp2'
 
     @staticmethod
     def get_file(user, suite, expt):
@@ -58,17 +58,20 @@ class MomentumFluxAnalyzer(object):
         self.append_log('Loaded')
 
     def _plot(self):
+        name = self.name
         u_mom_flux_ts = self.u_mom_flux_ts
+        v_mom_flux_ts = self.v_mom_flux_ts
         z = u_mom_flux_ts.coord('level_height').points
-        dz = z[1:] - z[:-1]
 
         plt.figure(name + '_momentum_flux_profile')
         plt.clf()
         plt.title(name + '_momentum_flux_profile')
 
-        plt.plot(u_mom_flux_ts[-1], z[:-1] + dz/2, 'g-', label='u')
+        plt.plot(u_mom_flux_ts.data.mean(axis=0), z, 'g-', label='u')
+        plt.plot(v_mom_flux_ts.data.mean(axis=0), z, 'b--', label='v')
         plt.ylabel('height (m)')
-        plt.xlabel('mom flux (kg m$^{-2}$ s$^{-1}$)')
+        plt.xlabel('mom flux (kg m$^{-1}$ s$^{-2}$)')
+        plt.legend()
         plt.savefig(os.path.join(self.results_dir, name + '_momentum_flux_profile.png'))
 
     def run(self):
@@ -78,7 +81,7 @@ class MomentumFluxAnalyzer(object):
         tau = 25600.
         u_inc = get_cube(pp2, 53, 185)
         v_inc = get_cube(pp2, 53, 186)
-        rho = get_cube(pp2, 0, 253) / Re ** 2
+        rho = (get_cube(pp2, 0, 253) / Re ** 2)
 
         u_inc_ts = u_inc.collapsed(['grid_latitude', 'grid_longitude'], iris.analysis.MEAN)
         v_inc_ts = v_inc.collapsed(['grid_latitude', 'grid_longitude'], iris.analysis.MEAN)
@@ -92,11 +95,13 @@ class MomentumFluxAnalyzer(object):
                  #.reshape(u_inc.shape[0] - 1, u_inc.shape[1], u_inc.shape[2])
         dz_ts = dz.repeat(u_inc_ts.shape[0]).reshape(*u_inc_ts.shape)
         self.u_mom_flux_ts = rho_ts * u_inc_ts * dz_ts
+        self.v_mom_flux_ts = rho_ts * v_inc_ts * dz_ts
 
         start_time = u_inc_ts.coord('time').points[0]
         self.times = u_inc_ts.coord('time').points - start_time
 
         self.results['u_mom_flux_ts'] = self.u_mom_flux_ts
+        self.results['v_mom_flux_ts'] = self.v_mom_flux_ts
 
         self.append_log('Analyzed')
 
@@ -105,7 +110,7 @@ class MomentumFluxAnalyzer(object):
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
 
-        cubelist_filename = os.path.join(self.results_dir, self.name + '_mom_flux_analysis.nc')
+        cubelist_filename = os.path.join(self.results_dir, self.name + '_momentum_flux_analysis.nc')
         cubelist = iris.cube.CubeList(self.results.values())
 
         self._plot()
