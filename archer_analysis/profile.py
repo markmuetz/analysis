@@ -1,5 +1,6 @@
 import os
 import sys
+from glob import glob
 import datetime as dt
 from collections import OrderedDict
 
@@ -14,40 +15,41 @@ from utils import get_cube
 from consts import Re, L, cp, g
 
 
-class MomentumFluxAnalyzer(object):
-    ARCHER_BASE_DIR = '/work/n02/n02/{}/cylc-run/{}/share/data/history/{}/'
-    PP2_FILE = 'atmos.408.pp2'
+class ProfileAnalyzer(object):
+    #ARCHER_BASE_DIR = '/work/n02/n02/{}/cylc-run/{}/share/data/history/{}/'
+    ARCHER_BASE_DIR = '/nerc/n02/n02/{}/um10.7_runs/archive/{}/share/data/history/{}/'
+    PP2_FILE_GLOB = 'atmos.???.pp2'
 
     @staticmethod
-    def get_file(user, suite, expt):
-        directory = MomentumFluxAnalyzer.get_directory(user, suite, expt)
-        return os.path.join(directory, MomentumFluxAnalyzer.PP2_FILE)
+    def get_files(user, suite, expt):
+        directory = ProfileAnalyzer.get_directory(user, suite, expt)
+        return sorted(glob(os.path.join(directory, ProfileAnalyzer.PP2_FILE_GLOB)))
 
     @staticmethod
     def get_directory(user, suite, expt):
-        return os.path.join(MomentumFluxAnalyzer.ARCHER_BASE_DIR.format(user, suite, expt))
+        return os.path.join(ProfileAnalyzer.ARCHER_BASE_DIR.format(user, suite, expt))
 
-    def __init__(self, user, suite, expt, results_dir):
+    def __init__(self, user, suite, expt, pp2_file, results_dir):
         self.user = user
         self.directory = self.get_directory(user, suite, expt)
         self.suite = suite
         self.expt = expt
-        self.file = os.path.join(self.directory, self.PP2_FILE)
+        self.pp2_file = os.path.join(self.directory, pp2_file)
         self.results_dir = results_dir
-        self.name = '{}_{}'.format(suite, expt)
+        self.name = '{}_{}'.format(suite, os.path.basename(self.pp2_file))
         self.results = OrderedDict()
 
     def already_analyzed(self):
-        return os.path.exists(self.file + '.analyzed')
+        return os.path.exists(self.pp2_file + '.analyzed')
 
     def append_log(self, message):
-        with open(self.file + '.analyzed', 'a') as f:
+        with open(self.pp2_file + '.analyzed', 'a') as f:
             f.write('{}: {}\n'.format(dt.datetime.now(), message))
 
     def load(self):
         """Load iris cube list into self.dump, rename if omnium available."""
         self.append_log('Loading')
-        self.pp2 = iris.load(self.file)
+        self.pp2 = iris.load(self.pp2_file)
 
         try:
             import omnium as om
@@ -57,7 +59,25 @@ class MomentumFluxAnalyzer(object):
             self.say('Cannot rename cubes')
         self.append_log('Loaded')
 
-    def _plot(self):
+    def _plot_uv(self):
+        name = self.name
+        u_profile = self.results['u_profile']
+        v_profile = self.results['v_profile']
+        u_heights = self.u_heights
+        plt.figure(name + '_uv_profile')
+        plt.clf()
+        plt.title(name + '_uv_profile')
+
+        plt.plot(u_profile.data, u_heights, 'g-', label='u')
+        plt.plot(v_profile.data, u_heights, 'b--', label='v')
+
+        plt.ylabel('height (m)')
+        plt.xlabel('(m s$^{-1}$)')
+
+        plt.legend()
+        plt.savefig(os.path.join(self.results_dir, name + '_uv_profile.png'))
+
+    def _plot_momentum_flux(self):
         name = self.name
         u_mom_flux_ts = self.u_mom_flux_ts
         v_mom_flux_ts = self.v_mom_flux_ts
@@ -78,7 +98,15 @@ class MomentumFluxAnalyzer(object):
         self.append_log('Analyzing')
         pp2 = self.pp2
 
-        tau = 25600.
+        u = get_cube(pp2, 0, 2)
+        v = get_cube(pp2, 0, 3)
+        u_profile = u.collapsed(['time', 'grid_latitude', 'grid_longitude'], iris.analysis.MEAN)
+        v_profile = v.collapsed(['time', 'grid_latitude', 'grid_longitude'], iris.analysis.MEAN)
+        self.u_heights = u.coord('level_height').points
+
+        self.results['u_profile'] = u_profile
+        self.results['v_profile'] = v_profile
+
         u_inc = get_cube(pp2, 53, 185)
         v_inc = get_cube(pp2, 53, 186)
         rho = (get_cube(pp2, 0, 253) / Re ** 2)
@@ -94,8 +122,9 @@ class MomentumFluxAnalyzer(object):
         #dz3d = dz.repeat(u_inc.shape[1] * u_inc.shape[2]) \
                  #.reshape(u_inc.shape[0] - 1, u_inc.shape[1], u_inc.shape[2])
         dz_ts = dz.repeat(u_inc_ts.shape[0]).reshape(*u_inc_ts.shape)
-        self.u_mom_flux_ts = rho_ts * u_inc_ts * dz_ts
-        self.v_mom_flux_ts = rho_ts * v_inc_ts * dz_ts
+        dt = 30 # delta_t = 30s.
+        self.u_mom_flux_ts = rho_ts * u_inc_ts * dz_ts / dt
+        self.v_mom_flux_ts = rho_ts * v_inc_ts * dz_ts / dt
 
         start_time = u_inc_ts.coord('time').points[0]
         self.times = u_inc_ts.coord('time').points - start_time
@@ -110,10 +139,12 @@ class MomentumFluxAnalyzer(object):
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
 
-        cubelist_filename = os.path.join(self.results_dir, self.name + '_momentum_flux_analysis.nc')
+        cubelist_filename = os.path.join(self.results_dir, self.name + '_profile_analysis.nc')
         cubelist = iris.cube.CubeList(self.results.values())
 
-        self._plot()
+        self._plot_uv()
+        self._plot_momentum_flux()
+        plt.close('all')
 
         iris.save(cubelist, cubelist_filename)
         self.append_log('Saved')
@@ -125,14 +156,20 @@ class MomentumFluxAnalyzer(object):
 
 def main(user, expts, suite, results_dir):
     for expt in expts:
-        mfa = MomentumFluxAnalyzer(user, suite, expt, results_dir)
-        mfa.load()
-        mfa.run()
-        mfa.save()
+        print(expt)
+        for pp2_file in ProfileAnalyzer.get_files(user, suite, expt):
+            pa = ProfileAnalyzer(user, suite, expt, os.path.basename(pp2_file), results_dir)
+            if pa.already_analyzed():
+                print('{} already analyzed'.format(dump_file))
+                continue
+            pa = ProfileAnalyzer(user, suite, expt, os.path.basename(pp2_file), results_dir)
+            pa.load()
+            pa.run()
+            pa.save()
 
 
 if __name__ == '__main__':
     user = os.path.expandvars('$USER')
     suite = os.path.expandvars('$CYLC_SUITE_NAME')
-    results_dir = os.path.expandvars('$DATAW')
+    results_dir = os.path.expandvars('$DATAM')
     main(user, sys.argv[1:], suite, results_dir)
