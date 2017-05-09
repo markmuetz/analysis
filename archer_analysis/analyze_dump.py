@@ -1,63 +1,16 @@
-import os
-import sys
-import datetime as dt
-from glob import glob
-from collections import OrderedDict
-
 import numpy as np
 import iris
 
 from utils import get_cube
 
+from analyzer import Analyzer
 from consts import Re, L, cp, g
 
-class DumpAnalyzer(object):
-    ARCHER_BASE_DIR = '/work/n02/n02/{}/cylc-run/{}/share/data/history/{}/'
-    DUMP_FILE_GLOB = 'atmosa_da???'
 
-    @staticmethod
-    def get_files(user, suite, expt):
-        directory = DumpAnalyzer.get_directory(user, suite, expt)
-        return sorted(glob(os.path.join(directory, DumpAnalyzer.DUMP_FILE_GLOB)))
-
-    @staticmethod
-    def get_directory(user, suite, expt):
-        return os.path.join(DumpAnalyzer.ARCHER_BASE_DIR.format(user, suite, expt))
-
-    def __init__(self, user, suite, expt, dump_file, results_dir):
-        self.user = user
-        self.directory = self.get_directory(user, suite, expt)
-        self.suite = suite
-        self.expt = expt
-        self.dump_file = os.path.join(self.directory, dump_file)
-        self.results_dir = results_dir
-        self.name = '{}:{}'.format(suite, os.path.basename(self.dump_file))
-        self.results = OrderedDict()
-
-    def already_analyzed(self):
-        return os.path.exists(self.dump_file + '.analyzed')
-
-    def append_log(self, message):
-        with open(self.dump_file + '.analyzed', 'a') as f:
-            f.write('{}: {}\n'.format(dt.datetime.now(), message))
-
-    def load(self):
-        """Load iris cube list into self.dump, rename if omnium available."""
-        self.append_log('Loading')
-        self.dump = iris.load(self.dump_file)
-
-        try:
-            import omnium as om
-            stash = om.Stash()
-            stash.rename_unknown_cubes(self.dump, True)
-        except:
-            self.say('Cannot rename cubes')
-        self.append_log('Loaded')
-
-    def run(self):
+class DumpAnalyzer(Analyzer):
+    def run_analysis(self):
         """Get useful cubes from self.dump, perform sanity chacks and calc MSE, TCW."""
-        self.append_log('Analyzing')
-        dump = self.dump
+        dump = self.cubes
         self.rho = get_cube(dump, 0, 253) / Re ** 2
         self.rho_d = get_cube(dump, 0, 389)
 
@@ -84,35 +37,6 @@ class DumpAnalyzer(object):
 
         self._calc_tcw(self.rho, self.qvars)
         self._calc_mse(self.rho, self.th, self.ep, self.q)
-        self.append_log('Analyzed')
-
-    def save(self):
-        """Save all results for dump."""
-        self.append_log('Saving')
-        if not os.path.exists(self.results_dir):
-            os.makedirs(self.results_dir)
-
-        cubelist_filename = os.path.join(self.results_dir, os.path.basename(self.dump_file) + '_dump_analysis.nc')
-        cubelist = iris.cube.CubeList(self.results.values())
-        iris.save(cubelist, cubelist_filename)
-
-        csv_filename = os.path.join(self.results_dir, self.expt + '.csv')
-        if not os.path.exists(csv_filename):
-            header = True
-        else:
-            header = False
-
-        with open(csv_filename, 'a') as f:
-            if header:
-                self.say('Writing header for {}'.format(csv_filename))
-                f.write('Time (hours),TMSE (J m-2),TCW (kg m-2)\n')
-            self.say('Writing to {}'.format(csv_filename))
-            f.write('{},{},{}\n'.format(self.dump_file[-3:], self.total_mse, self.tcw))
-        self.append_log('Saved')
-
-    def say(self, message):
-        """Speak out loud."""
-        print(message)
 
     def _create_cube(self, archetype, data, name, units):
         cube = archetype.copy()
@@ -149,10 +73,10 @@ class DumpAnalyzer(object):
 
         self.mse_profile = self.mse.mean(axis=(1, 2))
         self.total_mse = (self.mse_profile * dz).sum()
-        self.say('MSE [GJ m^-2] = {0:.5f}'.format(self.total_mse / 1e9))
-        self.say('  E(T) [GJ m^-2] = {0:.5f}'.format((self.e_t_profile * dz).sum() / 1e9))
-        self.say('  E(q) [GJ m^-2] = {0:.5f}'.format((self.e_q_profile * dz).sum() / 1e9))
-        self.say('  E(z) [GJ m^-2] = {0:.5f}'.format((self.e_z_profile * dz).sum() / 1e9))
+        print('MSE [GJ m^-2] = {0:.5f}'.format(self.total_mse / 1e9))
+        print('  E(T) [GJ m^-2] = {0:.5f}'.format((self.e_t_profile * dz).sum() / 1e9))
+        print('  E(q) [GJ m^-2] = {0:.5f}'.format((self.e_q_profile * dz).sum() / 1e9))
+        print('  E(z) [GJ m^-2] = {0:.5f}'.format((self.e_z_profile * dz).sum() / 1e9))
         return self.mse
 
     def _calc_mwvi(self, rho, var):
@@ -216,7 +140,7 @@ class DumpAnalyzer(object):
             self.results[mwvi_qv.name()] = mwvi_qv
             self.mwvi_vars.append((qv.name(), mwvi_qv))
         self.tcw = np.sum([v[1].data.mean() for v in self.mwvi_vars])
-        self.say('Total col water (kg m-2/mm): {}'.format(self.tcw))
+        print('Total col water (kg m-2/mm): {}'.format(self.tcw))
         return self.tcw
 
     def _sanity_check_water_species(self, qvars, mvars):
@@ -226,33 +150,14 @@ class DumpAnalyzer(object):
             msum += mv.data
 
         for qv, mv in zip(qvars, mvars):
-            self.say(qv.name())
+            print(qv.name())
             diff = np.abs((mv.data / (1 + msum)) - qv.data)
-            self.say('Max diff: {}'.format(diff.max()))
+            print('Max diff: {}'.format(diff.max()))
             if diff.max() > 1e-15:
-                self.say('MAX DIFF TOO LARGE')
+                print('MAX DIFF TOO LARGE')
 
     def _sanity_check_wv_density(self, rho, rho_d, q, m):
         q_rho = (q.data[:-1, :, :] + q.data[1:, :, :]) / 2
         m_rho = (m.data[:-1, :, :] + m.data[1:, :, :]) / 2
 
-        self.say('max diff rho_d * m, rho * q: {}'.format(np.abs(rho_d.data * m_rho - rho.data * q_rho).max()))
-
-
-def main(user, expts, suite, results_dir):
-    for expt in expts:
-        for dump_file in DumpAnalyzer.get_files(user, suite, expt):
-            da = DumpAnalyzer(user, suite, expt, os.path.basename(dump_file), results_dir)
-            if da.already_analyzed():
-                print('{} already analyzed'.format(dump_file))
-                continue
-            da.load()
-            da.run()
-            da.save()
-
-
-if __name__ == '__main__':
-    user = os.path.expandvars('$USER')
-    suite = os.path.expandvars('$CYLC_SUITE_NAME')
-    results_dir = os.path.join(os.path.expandvars('$DATAM'), 'results')
-    main(user, sys.argv[1:], suite, results_dir)
+        print('max diff rho_d * m, rho * q: {}'.format(np.abs(rho_d.data * m_rho - rho.data * q_rho).max()))
