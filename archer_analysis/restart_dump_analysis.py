@@ -7,7 +7,7 @@ from analyzer import Analyzer
 from consts import Re, L, cp, g
 
 
-class DumpAnalyzer(Analyzer):
+class RestartDumpAnalyzer(Analyzer):
     def run_analysis(self):
         """Get useful cubes from self.dump, perform sanity chacks and calc MSE, TCW."""
         dump = self.cubes

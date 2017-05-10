@@ -13,24 +13,15 @@ class Analyzer(object):
     def get_files(data_dir, filename):
         return sorted(glob(os.path.join(data_dir, filename)))
 
-    def __init__(self, user, suite, expt, data_type, data_dir, filename):
+    def __init__(self, user, suite, expt, data_type, data_dir, results_dir, filename):
         self.user = user
         self.suite = suite
         self.expt = expt
         self.data_type = data_type
-	if data_type == 'dataw':
-	    # N.B. dataw_dir is DATAW *for the current task*.
-	    # Need to work out where the atmos DATAW dir is.
-	    self.dataw_dir = data_dir
-	    self.datam_dir = None
-	    self.data_dir = os.path.join(os.path.dirname(data_dir), expt + '_atmos')
-	    self.results_dir = self.dataw_dir
-	elif data_type == 'datam':
-	    self.dataw_dir = None
-	    self.datam_dir = data_dir
-	    self.data_dir = data_dir
-	    self.results_dir = data_dir
+	self.data_dir = data_dir
+	self.results_dir = results_dir
         self.filename = os.path.join(self.data_dir, filename)
+
         self.name = '{}_{}_{}'.format(suite, expt, self.__class__.__name__)
         self.results = OrderedDict()
 	self.force = False
