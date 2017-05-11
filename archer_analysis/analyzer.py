@@ -22,9 +22,10 @@ class Analyzer(object):
 	self.results_dir = results_dir
         self.filename = os.path.join(self.data_dir, filename)
 
-        self.name = '{}_{}_{}'.format(suite, expt, self.__class__.__name__)
+        self.name = '{}_{}_{}_{}'.format(filename, suite, expt, self.__class__.__name__)
         self.results = OrderedDict()
 	self.force = False
+	self.logname = self.filename + '.' + self.__class__.__name__ + '.analyzed'
 
     def set_config(self, config):
 	self._config = config
@@ -32,10 +33,10 @@ class Analyzer(object):
 	    self.force = self._config['force'] == 'True'
 
     def already_analyzed(self):
-        return os.path.exists(self.filename + '.analyzed')
+        return os.path.exists(self.logname)
 
     def append_log(self, message):
-        with open(self.filename + '.analyzed', 'a') as f:
+        with open(self.logname, 'a') as f:
             f.write('{}: {}\n'.format(dt.datetime.now(), message))
 
     def load(self):

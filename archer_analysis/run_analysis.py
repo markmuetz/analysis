@@ -40,8 +40,17 @@ class RunControl(object):
 	config = self.read_config(config_dir)
 	self.config = config
 
+	settings_sec = '{}_settings'.format(data_type)
 	runcontrol_sec = '{}_runcontrol'.format(data_type)
+
+	settings = config[settings_sec]
 	runcontrol = config[runcontrol_sec]
+
+	convert = settings['convert_to_nc'] == True
+
+	if convert:
+	    pass
+
 	for ordered_analysis, enabled_str in sorted(runcontrol.items()):
 	    analysis = ordered_analysis[3:]
 	    enabled = enabled_str == 'True'

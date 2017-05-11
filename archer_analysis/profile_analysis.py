@@ -83,8 +83,6 @@ class ProfileAnalyzer(Analyzer):
         self.results['u_mom_flux_ts'] = self.u_mom_flux_ts
         self.results['v_mom_flux_ts'] = self.v_mom_flux_ts
 
-        self.append_log('Analyzed')
-
     def save_analysis(self):
         self._plot_uv()
         self._plot_momentum_flux()

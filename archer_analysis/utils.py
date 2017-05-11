@@ -3,5 +3,4 @@ def get_cube(cubes, section, item):
         stash = cube.attributes['STASH']
         if stash.section == section and stash.item == item:
             return cube
-
-    return None
+    raise Exception('Cube ({}, {}) not found'.format(section, item))
