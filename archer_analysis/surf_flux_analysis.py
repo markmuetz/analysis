@@ -13,6 +13,7 @@ from consts import L
 
 class SurfFluxAnalyzer(Analyzer):
     """Analyze surface fluxes, plot graphs of energy/moisture fluxes."""
+    analysis_name = 'surf_flux_analysis'
 
     def _plot(self):
         name = self.name

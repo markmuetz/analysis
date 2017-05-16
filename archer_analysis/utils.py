@@ -49,6 +49,14 @@ def count_blobs_mask(mask, diagonal=False, wrap=True):
     return blob_index, blobs
 
 
+def get_cube_from_attr(cubes, key, value):
+    for cube in cubes:
+	if key in cube.attributes:
+	    if cube.attributes[key] == value:
+		return cube
+    raise Exception('Cube with ({}, {}) not found'.format(key, value))
+
+
 def get_cube(cubes, section, item):
     for cube in cubes:
         stash = cube.attributes['STASH']

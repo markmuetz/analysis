@@ -11,6 +11,8 @@ from consts import Re, L, cp, g
 
 
 class ProfileAnalyzer(Analyzer):
+    analysis_name = 'profile_analysis'
+
     def _plot_uv(self):
         name = self.name
         u_profile = self.results['u_profile']

@@ -6,9 +6,9 @@ from cloud_analysis import CloudAnalyzer
 from mass_flux_analysis import MassFluxAnalyzer
 
 ANALYZERS = {
-    'surf_flux_analysis': SurfFluxAnalyzer,
-    'restart_dump_analysis': RestartDumpAnalyzer,
-    'profile_analysis': ProfileAnalyzer,
-    'cloud_analysis': CloudAnalyzer,
-    'mass_flux_analysis': MassFluxAnalyzer,
+    SurfFluxAnalyzer.analysis_name: SurfFluxAnalyzer,
+    RestartDumpAnalyzer.analysis_name: RestartDumpAnalyzer,
+    ProfileAnalyzer.analysis_name: ProfileAnalyzer,
+    CloudAnalyzer.analysis_name: CloudAnalyzer,
+    MassFluxAnalyzer.analysis_name: MassFluxAnalyzer,
 }
