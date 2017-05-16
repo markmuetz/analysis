@@ -42,7 +42,6 @@ class MassFluxAnalyzer(Analyzer):
 	blob_cube.data = blob_cube_data
 	self.results['blobs'] = blob_cube
 
-	print(sorted(mass_fluxes))
 	values = iris.coords.DimCoord(range(len(mass_fluxes)), long_name='values')
 	mass_flux_cube = iris.cube.Cube(mass_fluxes, 
 		                        long_name='mass-flux', 

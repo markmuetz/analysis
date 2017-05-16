@@ -1,6 +1,31 @@
 import numpy as np
 
 
+def is_power_of_two(num):
+    return num & (num - 1) == 0
+
+
+def coarse_grain(data, mask):
+    assert data.ndim == 2
+    assert data.shape[0] == data.shape[1]
+    assert is_power_of_two(data.shape[0])
+
+    nx = data.shape[0]
+    pow = int(np.log2(data.shape[0]))
+
+    coarse_data = []
+    for n in 2**np.arange(pow + 1):
+	coarse = np.zeros((n, n))
+	l = nx / n
+	for i in range(n):
+	    s1 = slice(i * l, (i + 1) * l)
+	    for j in range(n):
+		s2 = slice(j * l, (j + 1) * l)
+		coarse[i, j] = data[s1, s2][mask[s1, s2]].sum()
+	coarse_data.append((n, coarse))
+    return coarse_data
+
+
 def test_indices(i, j, diagonal=False, extended=False):
     if extended:
         # Count any cells in a 5x5 area centred on the current i, j cell as being adjacent.
