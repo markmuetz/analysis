@@ -30,9 +30,10 @@ class MassFluxSpatialScalesAnalyzer(Analyzer):
 	
 	for key, mass_fluxes in mass_flux.items():
 	    values = iris.coords.DimCoord(range(len(mass_fluxes)), long_name='values')
-	    name = 'mass-flux-{}'.format(key)
+	    name = 'spatial-mass-flux-{}'.format(key)
 	    mass_flux_cube = iris.cube.Cube(mass_fluxes, 
 					    long_name=name, 
 					    dim_coords_and_dims=[(values, 0)], 
 					    units='kg s-1')
+	    mass_flux_cube.attributes['id'] = name
 	    self.results[name] = mass_flux_cube
